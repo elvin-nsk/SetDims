@@ -9,8 +9,9 @@ Sub start()
   Dim tBgShape As Shape
   Dim tPoint1 As SnapPoint, tPoint2 As SnapPoint
   Dim i&, tStep#
-  
+    
   If ActiveSelectionRange.Count < 2 Then Exit Sub
+  'ActiveDocument.Unit = cdrMillimeter
   
   Set tRange = ActiveSelectionRange
   Set tBgShape = tRange.Shapes(1)
