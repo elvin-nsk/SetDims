@@ -1,46 +1,50 @@
 Attribute VB_Name = "SetDims"
 Option Explicit
 
-Sub start()
+Private Const RELEASE As Boolean = True
 
-  Const STEPDIV# = 20
+Sub Start()
+  
+  If RELEASE Then On Error GoTo ErrHandler
+  lib_elvin.BoostStart "Расстановка измерений", RELEASE
+  Main.Create.Start
 
-  Dim tRange As ShapeRange
-  Dim tBgShape As Shape
-  Dim tPoint1 As SnapPoint, tPoint2 As SnapPoint
-  Dim i&, tStep#
-    
-  If ActiveSelectionRange.Count < 2 Then Exit Sub
-  'ActiveDocument.Unit = cdrMillimeter
-  
-  Set tRange = ActiveSelectionRange
-  Set tBgShape = tRange.Shapes(1)
-  tStep = tBgShape.SizeWidth / STEPDIV
-  
-  For i = 2 To tRange.Count
-    With tRange(i)
-    
-      'слева
-      Set tPoint1 = .SnapPoints.AddUserSnapPoint(.LeftX, .BottomY)
-      Set tPoint2 = tBgShape.SnapPoints.AddUserSnapPoint(tBgShape.LeftX, .BottomY)
-      ActiveLayer.CreateLinearDimension cdrDimensionHorizontal, tPoint1, tPoint2, TextY:=tBgShape.BottomY - ((i - 1) * tStep)
-      
-      'справа
-      Set tPoint1 = .SnapPoints.AddUserSnapPoint(.RightX, .TopY)
-      Set tPoint2 = tBgShape.SnapPoints.AddUserSnapPoint(tBgShape.RightX, .TopY)
-      ActiveLayer.CreateLinearDimension cdrDimensionHorizontal, tPoint1, tPoint2, TextY:=tBgShape.TopY + ((i - 1) * tStep)
-      
-      'сверху
-      Set tPoint1 = .SnapPoints.AddUserSnapPoint(.LeftX, .TopY)
-      Set tPoint2 = tBgShape.SnapPoints.AddUserSnapPoint(.LeftX, tBgShape.TopY)
-      ActiveLayer.CreateLinearDimension cdrDimensionVertical, tPoint1, tPoint2, TextX:=tBgShape.LeftX - ((i - 1) * tStep)
-      
-      'снизу
-      Set tPoint1 = .SnapPoints.AddUserSnapPoint(.RightX, .BottomY)
-      Set tPoint2 = tBgShape.SnapPoints.AddUserSnapPoint(.RightX, tBgShape.BottomY)
-      ActiveLayer.CreateLinearDimension cdrDimensionVertical, tPoint1, tPoint2, TextX:=tBgShape.RightX + ((i - 1) * tStep)
-    
-    End With
-  Next
+CleanExit:
+  lib_elvin.BoostFinish
+  Exit Sub
+
+ErrHandler:
+  MsgBox "Ошибка: " & Err.Description, vbCritical
+  Resume CleanExit
 
 End Sub
+
+Private Sub test()
+  With ActiveLayer.Shapes
+    FindMyPeersInCol.Create(ActiveShape, .All).GetPeers.CreateSelection
+  End With
+End Sub
+
+Private Sub test2()
+  Dim NewRange As ShapeRange
+  Set NewRange = CreateShapeRange
+  NewRange.AddRange ActiveLayer.Shapes.All
+  With NewRange
+    .Sort "@shape1.Left > @shape2.Left"
+    .Item(1).CreateSelection
+  End With
+End Sub
+
+Private Sub test3()
+  With ActiveLayer.Shapes
+    Dim Shape As Shape
+    Set Shape = FindMyPeersInCol.Create(ActiveShape, .All).GetNeighborPrev
+    If Shape Is Nothing Then Exit Sub
+    Shape.CreateSelection
+  End With
+End Sub
+
+Private Sub test4()
+  CreateDim.Create.DrawSingleOver ActiveShape, cdrDown, 0
+End Sub
+
